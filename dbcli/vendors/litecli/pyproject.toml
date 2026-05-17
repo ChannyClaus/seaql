@@ -1,0 +1,78 @@
+[project]
+name = "litecli"
+dynamic = ["version"]
+description = "CLI for SQLite Databases with auto-completion and syntax highlighting."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "BSD" }
+authors = [{ name = "dbcli", email = "litecli-users@googlegroups.com" }]
+urls = { "homepage" = "https://github.com/dbcli/litecli" }
+dependencies = [
+    "cli-helpers[styles]>=2.2.1",
+    "click>=4.1,!=8.1.*",
+    "configobj>=5.0.5",
+    "prompt-toolkit>=3.0.3,<4.0.0",
+    "pygments>=1.6",
+    "sqlparse>=0.4.4"
+]
+
+[build-system]
+requires = [
+    "setuptools>=64.0",
+    "setuptools-scm>=8;python_version>='3.8'",
+    "setuptools-scm<8;python_version<'3.8'",
+]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+
+[project.scripts]
+litecli = "litecli.main:cli"
+
+[project.optional-dependencies]
+ai = [
+    "llm>=0.25.0",
+    "setuptools", # Required by llm commands to install models
+    "pip",
+]
+sqlean = ["sqlean-py>=3.47.0", 
+    "sqlean-stubs>=0.0.3"]
+
+dev = [
+    "behave>=1.2.6",
+    "coverage>=7.2.7",
+    "pexpect>=4.9.0",
+    "pytest>=7.4.4",
+    "pytest-cov>=4.1.0",
+    "tox>=4.8.0",
+    "pdbpp>=0.10.3",
+    "llm>=0.25.0",
+    "setuptools",
+    "pip",
+    "ty>=0.0.4"
+]
+
+[tool.setuptools.packages.find]
+exclude = ["screenshots", "tests*"]
+
+[tool.setuptools.package-data]
+litecli = ["liteclirc", "AUTHORS"]
+
+[tool.ruff]
+line-length = 140
+
+[tool.ty.environment]
+python-version = "3.10"
+root = [".", "litecli", "litecli/packages", "litecli/packages/special"]
+
+
+[tool.ty.src]
+exclude = [
+    '**/build/',
+    '**/dist/',
+    '**/.tox/',
+    '**/.venv/',
+    '**/.mypy_cache/',
+    '**/.pytest_cache/',
+    '**/.ruff_cache/'
+]

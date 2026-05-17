@@ -7,7 +7,14 @@ from typing import NoReturn
 _SQLITE_EXTENSIONS = {'.db', '.sqlite', '.sqlite3', '.db3'}
 
 
+def _setup_vendors() -> None:
+    base = os.path.join(os.path.dirname(__file__), 'vendors')
+    if base not in sys.path:
+        sys.path.insert(0, base)
+
+
 def main() -> None:
+    _setup_vendors()
     args = sys.argv[1:]
 
     detected = _detect_db_type(args)

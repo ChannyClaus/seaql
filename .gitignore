@@ -13,3 +13,7 @@ ENV/
 *.so
 *.dylib
 *.dll
+
+# Vendored package caches
+dbcli/vendors/*/__pycache__/
+dbcli/vendors/*/*/__pycache__/
