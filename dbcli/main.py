@@ -9,35 +9,11 @@ from typing import NoReturn
 def main() -> None:
     args = sys.argv[1:]
 
-    force_mysql = False
-    force_postgres = False
-    clean_args: list[str] = []
-
-    i = 0
-    while i < len(args):
-        a = args[i]
-        if a == '--mysql':
-            force_mysql = True
-        elif a in ('--postgres', '--pg'):
-            force_postgres = True
-        else:
-            clean_args.append(a)
-        i += 1
-
-    if force_mysql and force_postgres:
-        print("dbcli: error: cannot use both --mysql and --postgres", file=sys.stderr)
-        sys.exit(2)
-
-    if force_mysql:
-        _run_tool('mycli', 'mycli', clean_args)
-    elif force_postgres:
-        _run_tool('pgcli', 'pgcli', clean_args)
-
-    detected = _detect_db_type(clean_args)
+    detected = _detect_db_type(args)
     if detected == 'mysql':
-        _run_tool('mycli', 'mycli', clean_args)
+        _run_tool('mycli', 'mycli', args)
     elif detected == 'postgres':
-        _run_tool('pgcli', 'pgcli', clean_args)
+        _run_tool('pgcli', 'pgcli', args)
 
     _show_usage()
 
@@ -85,13 +61,7 @@ def _show_usage() -> NoReturn:
     print("    mysql://user@host:3306/db     -> MySQL (mycli)")
     print("    postgres://user@host:5432/db  -> PostgreSQL (pgcli)")
     print()
-    print("  To force a database type:")
-    print("    dbcli --mysql [OPTIONS] [DBNAME]")
-    print("    dbcli --postgres [OPTIONS] [DBNAME]")
-    print()
-    print("  For full option reference:")
-    print("    dbcli --mysql --help")
-    print("    dbcli --postgres --help")
+    print("  Port-based detection is also supported (-p/-P/--port 3306 or 5432).")
     sys.exit(1)
 
 
