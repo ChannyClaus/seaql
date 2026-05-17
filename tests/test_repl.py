@@ -11,7 +11,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 def run_cli(args: list[str], input_text: str, timeout: int = 10) -> tuple[int, str, str]:
     env = os.environ.copy()
     env["PYTHONUNBUFFERED"] = "1"
-    env["PGPASSWORD"] = "postgres"
     proc = subprocess.Popen(
         [sys.executable, "-m", "dbcli"] + args,
         stdin=subprocess.PIPE,
@@ -81,7 +80,7 @@ class TestPostgreSQLRepl:
 
     def test_uri_connection(self):
         input_text = "SELECT 1 AS uri_test;\n\\q\n"
-        rc, stdout, stderr = run_cli(["postgres://postgres:postgres@127.0.0.1:5432/test"], input_text)
+        rc, stdout, stderr = run_cli(["postgres://postgres@127.0.0.1:5432/test"], input_text)
         assert "uri_test" in stdout
 
     def test_default_port_detection(self):

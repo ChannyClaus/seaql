@@ -109,7 +109,7 @@ class TestPostgreSQL(BaseBackendTest):
     def test_uri_connection(self):
         plugin_cls = get_plugin("postgres")
         plugin = plugin_cls()
-        conn_info = plugin.connect(["postgres://postgres:postgres@127.0.0.1:5432/test"])
+        conn_info = plugin.connect(["postgres://postgres@127.0.0.1:5432/test"])
         executor = plugin.create_executor(conn_info)
         results = plugin.execute_query(executor, "SELECT 1 AS uri_ok")
         rows = []
