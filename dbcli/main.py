@@ -9,16 +9,8 @@ from dbcli.core.app import DbCliApp
 
 _SQLITE_EXTENSIONS = {'.db', '.sqlite', '.sqlite3', '.db3'}
 
-_VENDOR_BASE = os.path.join(os.path.dirname(__file__), 'vendors')
-
-
-def _setup_vendors() -> None:
-    if _VENDOR_BASE not in sys.path:
-        sys.path.insert(0, _VENDOR_BASE)
-
 
 def main() -> None:
-    _setup_vendors()
     args = sys.argv[1:]
     db_type = _detect_db_type(args)
     if not db_type:

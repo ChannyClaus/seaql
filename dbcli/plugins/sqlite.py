@@ -20,14 +20,14 @@ class SQLitePlugin(DatabasePlugin):
         return style_from_pygments_cls(get_style_by_name(syntax_style))
 
     def create_completer(self, smart_completion: bool, settings: dict):
-        from litecli.sqlcompleter import SQLCompleter
+        from dbcli.plugins.litecli_pkg.sqlcompleter import SQLCompleter
         return SQLCompleter(
             supported_formats=['psql', 'csv', 'tsv'],
             keyword_casing='auto',
         )
 
     def create_executor(self, connection_info: dict):
-        from litecli.sqlexecute import SQLExecute
+        from dbcli.plugins.litecli_pkg.sqlexecute import SQLExecute
         return SQLExecute(connection_info.get('database'))
 
     def execute_query(self, executor, query: str) -> list[tuple]:
