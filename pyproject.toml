@@ -1,6 +1,6 @@
 [project]
 name = "seaql"
-dynamic = ["version"]
+version = "0.1.1"
 description = "Unified CLI for MySQL, PostgreSQL, and SQLite databases (seaql)."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -61,8 +61,6 @@ seaql = "seaql.main:main"
 include = ["seaql*"]
 exclude = ["seaql.__pycache__*"]
 
-[tool.setuptools_scm]
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = [
@@ -73,5 +71,5 @@ markers = [
 ]
 
 [build-system]
-requires = ["setuptools>=64", "setuptools-scm>=8"]
+requires = ["setuptools>=64"]
 build-backend = "setuptools.build_meta"
