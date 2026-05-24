@@ -33,8 +33,32 @@ class DatabasePlugin(ABC):
     def create_output_style(self, syntax_style: str, cli_style: dict) -> Any:
         return None
 
-    @abstractmethod
-    def create_completer(self, smart_completion: bool, settings: dict) -> Completer: ...
+    def create_completer(self, smart_completion: bool, settings: dict) -> Completer:
+        from seaql.plugins.litecli_pkg.sqlcompleter import SQLCompleter
+
+        completer = SQLCompleter(
+            supported_formats=['psql', 'csv', 'tsv'],
+            keyword_casing='auto',
+        )
+        commands = self.get_special_commands()
+        if commands:
+            completer.extend_special_commands(commands)
+        keywords = self.get_extra_keywords()
+        if keywords:
+            completer.extend_keywords(keywords)
+        executor = settings.get('executor')
+        if executor:
+            self.populate_completer_schema(completer, executor)
+        return completer
+
+    def get_special_commands(self) -> list[str]:
+        return []
+
+    def get_extra_keywords(self) -> list[str]:
+        return []
+
+    def populate_completer_schema(self, completer, executor) -> None:
+        pass
 
     @abstractmethod
     def create_executor(self, connection_info: dict) -> Any: ...
