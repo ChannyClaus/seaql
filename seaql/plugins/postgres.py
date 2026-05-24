@@ -158,7 +158,7 @@ class PsqlExecutor:
         self.conn.autocommit = True
 
     def run(self, query, pgspecial=None):
-        from pgspecial.main import CommandNotFound
+        from seaql.vendored.pgspecial.main import CommandNotFound
 
         statement = query.strip()
         if not statement:
@@ -214,7 +214,7 @@ class PostgresPlugin(DatabasePlugin):
         return Style([])
 
     def create_completer(self, smart_completion: bool, settings: dict):
-        from pgspecial.main import PGSpecial
+        from seaql.vendored.pgspecial.main import PGSpecial
         self._pgspecial = PGSpecial()
         words = SQL_KEYWORDS + PSQL_COMMANDS + list(self._pgspecial.commands.keys())
         return WordCompleter(words, ignore_case=True, sentence=True)

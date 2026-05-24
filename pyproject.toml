@@ -25,9 +25,6 @@ classifiers = [
 keywords = ["mysql", "postgresql", "sqlite", "cli", "database", "client"]
 
 dependencies = [
-    "click >= 8.3.1, != 8.3.0, < 9",
-    "clickdc >= 0.1.1",
-    "cryptography >= 46.0.0",
     "Pygments >= 2.19.0",
     "prompt_toolkit >= 3.0.41, < 4.0.0",
     "PyMySQL >= 1.1.2",
@@ -45,7 +42,6 @@ dependencies = [
     "keyring >= 12.2.0",
     "setproctitle >= 1.1.9; sys_platform != 'win32' and 'CYGWIN' not in sys_platform",
     "tzlocal >= 5.2",
-    "pgspecial >= 2.0.0",
 ]
 
 [project.optional-dependencies]
