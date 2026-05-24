@@ -1,6 +1,6 @@
 [project]
 name = "seaql"
-version = "0.1.1"
+version = "0.1.2"
 description = "Unified CLI for MySQL, PostgreSQL, and SQLite databases (seaql)."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -46,6 +46,7 @@ dependencies = [
     "setproctitle >= 1.1.9; sys_platform != 'win32' and 'CYGWIN' not in sys_platform",
     "tzlocal >= 5.2",
     "pgspecial >= 2.0.0",
+    "pgcli >= 4.0.0",
 ]
 
 [project.optional-dependencies]

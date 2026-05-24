@@ -99,6 +99,7 @@ class PostgresPlugin(DatabasePlugin):
             if a.startswith('--dbname='):
                 database = a[9:]; i += 1; continue
             if a.startswith('postgres://') or a.startswith('postgresql://'):
+                dsn = a
                 from urllib.parse import urlparse
                 u = urlparse(a)
                 database = u.path[1:] or database

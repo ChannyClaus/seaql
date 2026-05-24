@@ -215,73 +215,6 @@ wheels = [
 ]
 
 [[package]]
-name = "dbcli"
-source = { editable = "." }
-dependencies = [
-    { name = "cli-helpers", extra = ["styles"] },
-    { name = "click" },
-    { name = "clickdc" },
-    { name = "configobj" },
-    { name = "cryptography" },
-    { name = "keyring" },
-    { name = "pgspecial" },
-    { name = "prompt-toolkit" },
-    { name = "psycopg", marker = "sys_platform != 'win32'" },
-    { name = "psycopg-binary", marker = "sys_platform == 'win32'" },
-    { name = "pycryptodomex" },
-    { name = "pyfzf" },
-    { name = "pygments" },
-    { name = "pymysql" },
-    { name = "pyperclip" },
-    { name = "rapidfuzz" },
-    { name = "setproctitle", marker = "sys_platform != 'win32' and 'CYGWIN' not in sys_platform" },
-    { name = "sqlglot", extra = ["c"] },
-    { name = "sqlparse" },
-    { name = "tzlocal" },
-    { name = "wcwidth" },
-]
-
-[package.optional-dependencies]
-test = [
-    { name = "pytest" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "pytest" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "cli-helpers", extras = ["styles"], specifier = ">=2.15.0" },
-    { name = "click", specifier = "!=8.3.0,>=8.3.1,<9" },
-    { name = "clickdc", specifier = ">=0.1.1" },
-    { name = "configobj", specifier = ">=5.0.9" },
-    { name = "cryptography", specifier = ">=46.0.0" },
-    { name = "keyring", specifier = ">=12.2.0" },
-    { name = "pgspecial", specifier = ">=2.0.0" },
-    { name = "prompt-toolkit", specifier = ">=3.0.41,<4.0.0" },
-    { name = "psycopg", marker = "sys_platform != 'win32'", specifier = ">=3.0.14" },
-    { name = "psycopg-binary", marker = "sys_platform == 'win32'", specifier = ">=3.0.14" },
-    { name = "pycryptodomex", specifier = ">=3.23.0" },
-    { name = "pyfzf", specifier = ">=0.3.1" },
-    { name = "pygments", specifier = ">=2.19.0" },
-    { name = "pymysql", specifier = ">=1.1.2" },
-    { name = "pyperclip", specifier = ">=1.11.0" },
-    { name = "pytest", marker = "extra == 'test'", specifier = ">=7.0" },
-    { name = "rapidfuzz", specifier = ">=3.14.0" },
-    { name = "setproctitle", marker = "sys_platform != 'win32' and 'CYGWIN' not in sys_platform", specifier = ">=1.1.9" },
-    { name = "sqlglot", extras = ["c"], specifier = ">=30.7.0" },
-    { name = "sqlparse", specifier = ">=0.4.4,<0.6.0" },
-    { name = "tzlocal", specifier = ">=5.2" },
-    { name = "wcwidth", specifier = ">=0.6.0" },
-]
-provides-extras = ["test"]
-
-[package.metadata.requires-dev]
-dev = [{ name = "pytest", specifier = ">=9.0.3" }]
-
-[[package]]
 name = "exceptiongroup"
 version = "1.3.1"
 source = { registry = "https://pypi.org/simple" }
@@ -393,6 +326,28 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/d7/f1/e7a6dd94a8d4a5626c03e4e99c87f241ba9e350cd9e6d75123f992427270/packaging-26.2.tar.gz", hash = "sha256:ff452ff5a3e828ce110190feff1178bb1f2ea2281fa2075aadb987c2fb221661", size = 228134 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/df/b2/87e62e8c3e2f4b32e5fe99e0b86d576da1312593b39f47d8ceef365e95ed/packaging-26.2-py3-none-any.whl", hash = "sha256:5fc45236b9446107ff2415ce77c807cee2862cb6fac22b8a73826d0693b0980e", size = 100195 },
+]
+
+[[package]]
+name = "pgcli"
+version = "4.3.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cli-helpers", extra = ["styles"] },
+    { name = "click" },
+    { name = "configobj" },
+    { name = "pgspecial" },
+    { name = "prompt-toolkit" },
+    { name = "psycopg", marker = "sys_platform != 'win32'" },
+    { name = "psycopg-binary", marker = "sys_platform == 'win32'" },
+    { name = "pygments" },
+    { name = "setproctitle", marker = "sys_platform != 'win32' and 'CYGWIN' not in sys_platform" },
+    { name = "sqlparse" },
+    { name = "tzlocal" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ab/9a/c86de44b7a663f0a15cb835d317f22f2ef8438154f6b646ffe32baa3799d/pgcli-4.3.0.tar.gz", hash = "sha256:765ae1550c5508a481f19f16a99716c253fe91afb255797add2d635da20b6aef", size = 147254 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/78/b4/1229fbe208450998c1e66f5dd2b7e59277602911b5cd2e502dcbffd4c8df/pgcli-4.3.0-py3-none-any.whl", hash = "sha256:1b06710c837407465ad200b636a604b5e1a6ad3e05eabfd8306e13de247765b9", size = 85466 },
 ]
 
 [[package]]
@@ -651,6 +606,68 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/cc/1b/2b229520f0b48464cfcd7aa758f74551d12c9bc4ab544022a60210aab064/rapidfuzz-3.14.5-pp311-pypy311_pp73-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:97c6d85283629646fa87acc22c66b30ea9d4de7f6fdf887daa2e30fa041829b5", size = 3099302 },
     { url = "https://files.pythonhosted.org/packages/aa/b5/363906b1064fc6fe611783a61764927bbd91919aaaabe8cba82151ca93ef/rapidfuzz-3.14.5-pp311-pypy311_pp73-win_amd64.whl", hash = "sha256:dfef96543ced67d9513a422755db422ae1dc34dade0a1485e0b43e7342ed3ebf", size = 1509889 },
 ]
+
+[[package]]
+name = "seaql"
+version = "0.1.1"
+source = { editable = "." }
+dependencies = [
+    { name = "cli-helpers", extra = ["styles"] },
+    { name = "click" },
+    { name = "clickdc" },
+    { name = "configobj" },
+    { name = "cryptography" },
+    { name = "keyring" },
+    { name = "pgcli" },
+    { name = "pgspecial" },
+    { name = "prompt-toolkit" },
+    { name = "psycopg", marker = "sys_platform != 'win32'" },
+    { name = "psycopg-binary", marker = "sys_platform == 'win32'" },
+    { name = "pycryptodomex" },
+    { name = "pyfzf" },
+    { name = "pygments" },
+    { name = "pymysql" },
+    { name = "pyperclip" },
+    { name = "rapidfuzz" },
+    { name = "setproctitle", marker = "sys_platform != 'win32' and 'CYGWIN' not in sys_platform" },
+    { name = "sqlglot", extra = ["c"] },
+    { name = "sqlparse" },
+    { name = "tzlocal" },
+    { name = "wcwidth" },
+]
+
+[package.optional-dependencies]
+test = [
+    { name = "pytest" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "cli-helpers", extras = ["styles"], specifier = ">=2.15.0" },
+    { name = "click", specifier = "!=8.3.0,>=8.3.1,<9" },
+    { name = "clickdc", specifier = ">=0.1.1" },
+    { name = "configobj", specifier = ">=5.0.9" },
+    { name = "cryptography", specifier = ">=46.0.0" },
+    { name = "keyring", specifier = ">=12.2.0" },
+    { name = "pgcli", specifier = ">=4.0.0" },
+    { name = "pgspecial", specifier = ">=2.0.0" },
+    { name = "prompt-toolkit", specifier = ">=3.0.41,<4.0.0" },
+    { name = "psycopg", marker = "sys_platform != 'win32'", specifier = ">=3.0.14" },
+    { name = "psycopg-binary", marker = "sys_platform == 'win32'", specifier = ">=3.0.14" },
+    { name = "pycryptodomex", specifier = ">=3.23.0" },
+    { name = "pyfzf", specifier = ">=0.3.1" },
+    { name = "pygments", specifier = ">=2.19.0" },
+    { name = "pymysql", specifier = ">=1.1.2" },
+    { name = "pyperclip", specifier = ">=1.11.0" },
+    { name = "pytest", marker = "extra == 'test'", specifier = ">=7.0" },
+    { name = "rapidfuzz", specifier = ">=3.14.0" },
+    { name = "setproctitle", marker = "sys_platform != 'win32' and 'CYGWIN' not in sys_platform", specifier = ">=1.1.9" },
+    { name = "sqlglot", extras = ["c"], specifier = ">=30.7.0" },
+    { name = "sqlparse", specifier = ">=0.4.4,<0.6.0" },
+    { name = "tzlocal", specifier = ">=5.2" },
+    { name = "wcwidth", specifier = ">=0.6.0" },
+]
+provides-extras = ["test"]
 
 [[package]]
 name = "secretstorage"
