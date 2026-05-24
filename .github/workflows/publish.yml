@@ -26,3 +26,44 @@ jobs:
 
       - name: Publish
         run: uv publish --token ${{ secrets.PYPI_API_TOKEN }}
+
+  update-homebrew:
+    needs: build-and-publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: seaql
+
+      - name: Check out homebrew-seaql tap
+        uses: actions/checkout@v4
+        with:
+          repository: ChannyClaus/homebrew-seaql
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: homebrew-seaql
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Generate and push updated formula
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          VERSION=${TAG#v}
+
+          python3 seaql/scripts/generate-homebrew-formula.py "$VERSION" > homebrew-seaql/Formula/seaql.rb
+
+          cd homebrew-seaql
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/seaql.rb
+          if git diff --cached --quiet; then
+            echo "No changes to formula for version $VERSION"
+          else
+            git commit -m "Update seaql to $VERSION"
+            git push
+          fi
