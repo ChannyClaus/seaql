@@ -240,6 +240,7 @@ class PostgresPlugin(DatabasePlugin):
             conn = executor.connection
             dbname = self.connection_info.get('database', '')
             completer.set_dbname(dbname)
+            completer.extend_schemata(dbname)
 
             with conn.cursor() as cur:
                 cur.execute(
