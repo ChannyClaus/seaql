@@ -90,14 +90,7 @@ class DbCliApp:
 
     @staticmethod
     def _multiline_exception(text: str) -> bool:
-        text = text.strip()
-        return (
-            text.startswith("\\")
-            or text.endswith(";")
-            or text.endswith("\\g")
-            or text.endswith("\\G")
-            or text in ("exit", "quit", ":q", "")
-        )
+        return True
 
     def _cli_is_multiline(self):
         @Condition
@@ -126,11 +119,13 @@ class DbCliApp:
         stripped = text.strip()
         if stripped.lower() in ('exit', 'quit', ':q', '\\q'):
             raise EOFError
+        if not stripped.startswith('\\') and not stripped.endswith(';'):
+            stripped += ';'
         try:
-            results = self.plugin.execute_query(self.executor, text)
+            results = self.plugin.execute_query(self.executor, stripped)
             output = self.plugin.format_output(results, 'psql')
             for line in output:
                 print(line)
         except Exception as e:
-            self.logger.error('sql: %r, error: %r', text, e)
+            self.logger.error('sql: %r, error: %r', stripped, e)
             print(f"\033[31m{e}\033[0m", file=sys.stderr)
