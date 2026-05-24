@@ -6,135 +6,20 @@ from psycopg.conninfo import make_conninfo
 from cli_helpers.tabular_output import TabularOutputFormatter
 from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.styles import Style
-from prompt_toolkit.completion import WordCompleter
 from pygments.lexers.sql import PostgresLexer
 
 from seaql.core.plugin import DatabasePlugin
-
-SQL_KEYWORDS = [
-    'ABORT', 'ABS', 'ABSOLUTE', 'ACCESS', 'ACTION', 'ADA', 'ADD', 'ADMIN',
-    'AFTER', 'AGGREGATE', 'ALIAS', 'ALL', 'ALLOCATE', 'ALTER', 'ANALYSE',
-    'ANALYZE', 'AND', 'ANY', 'ARE', 'AS', 'ASC', 'ASENSITIVE', 'ASSERTION',
-    'ASSIGNMENT', 'ASYMMETRIC', 'AT', 'ATOMIC', 'AUTHORIZATION', 'AVG',
-    'BACKWARD', 'BEFORE', 'BEGIN', 'BETWEEN', 'BIGINT', 'BINARY', 'BIT',
-    'BITVAR', 'BIT_LENGTH', 'BLOB', 'BOOLEAN', 'BOTH', 'BREADTH', 'BY',
-    'C', 'CACHE', 'CALL', 'CALLED', 'CARDINALITY', 'CASCADE', 'CASCADED',
-    'CASE', 'CAST', 'CATALOG', 'CATALOG_NAME', 'CEIL', 'CEILING',
-    'CHAIN', 'CHAR', 'CHARACTER', 'CHARACTERISTICS', 'CHARACTERS',
-    'CHARACTER_LENGTH', 'CHARACTER_SET_CATALOG', 'CHARACTER_SET_NAME',
-    'CHARACTER_SET_SCHEMA', 'CHAR_LENGTH', 'CHECK', 'CHECKED',
-    'CHECKPOINT', 'CLASS', 'CLASS_ORIGIN', 'CLOB', 'CLOSE', 'CLUSTER',
-    'COALESCE', 'COBOL', 'COLLATE', 'COLLATION', 'COLLATION_CATALOG',
-    'COLLATION_NAME', 'COLLATION_SCHEMA', 'COLUMN', 'COLUMN_NAME',
-    'COMMAND_FUNCTION', 'COMMAND_FUNCTION_CODE', 'COMMENT', 'COMMIT',
-    'COMMITTED', 'COMPLETION', 'CONDITION', 'CONDITION_NUMBER',
-    'CONNECT', 'CONNECTION', 'CONNECTION_NAME', 'CONSTRAINT',
-    'CONSTRAINTS', 'CONSTRAINT_CATALOG', 'CONSTRAINT_NAME',
-    'CONSTRAINT_SCHEMA', 'CONSTRUCTOR', 'CONTAINS', 'CONTINUE',
-    'CONVERSION', 'CONVERT', 'COPY', 'CORRESPONDING', 'COUNT',
-    'CREATE', 'CREATEDB', 'CREATEUSER', 'CROSS', 'CUBE', 'CURRENT',
-    'CURRENT_DATE', 'CURRENT_DEFAULT_TRANSFORM_GROUP',
-    'CURRENT_PATH', 'CURRENT_ROLE', 'CURRENT_TIME',
-    'CURRENT_TIMESTAMP', 'CURRENT_TRANSFORM_GROUP_FOR_TYPE',
-    'CURRENT_USER', 'CURSOR', 'CURSOR_NAME', 'CYCLE', 'DATA',
-    'DATABASE', 'DATE', 'DATETIME_INTERVAL_CODE',
-    'DATETIME_INTERVAL_PRECISION', 'DAY', 'DEALLOCATE', 'DEC',
-    'DECIMAL', 'DECLARE', 'DEFAULT', 'DEFERRABLE', 'DEFERRED',
-    'DEFINED', 'DEFINER', 'DEGREE', 'DELETE', 'DELIMITER',
-    'DELIMITERS', 'DENSE_RANK', 'DEPTH', 'DEREF', 'DERIVED', 'DESC',
-    'DESCRIBE', 'DESCRIPTOR', 'DESTROY', 'DESTRUCTOR', 'DETERMINISTIC',
-    'DIAGNOSTICS', 'DICTIONARY', 'DISCONNECT', 'DISPATCH', 'DISTINCT',
-    'DO', 'DOMAIN', 'DOUBLE', 'DROP', 'DYNAMIC', 'DYNAMIC_FUNCTION',
-    'DYNAMIC_FUNCTION_CODE', 'EACH', 'ELSE', 'ENCODING', 'ENCRYPTED',
-    'END', 'END-EXEC', 'EQUALS', 'ERROR', 'ESCAPE', 'EVERY', 'EXCEPT',
-    'EXCEPTION', 'EXCLUDING', 'EXCLUSIVE', 'EXEC', 'EXECUTE',
-    'EXISTING', 'EXISTS', 'EXP', 'EXPLAIN', 'EXTERNAL', 'EXTRACT',
-    'FALSE', 'FETCH', 'FILTER', 'FINAL', 'FIRST', 'FLOAT', 'FLOOR',
-    'FOLLOWING', 'FOR', 'FORCE', 'FOREIGN', 'FORTRAN', 'FORWARD',
-    'FOUND', 'FREE', 'FREEZE', 'FROM', 'FULL', 'FUNCTION', 'G',
-    'GENERAL', 'GENERATED', 'GET', 'GLOBAL', 'GO', 'GOTO', 'GRANT',
-    'GRANTED', 'GROUP', 'GROUPING', 'HAVING', 'HIERARCHY', 'HOLD',
-    'HOUR', 'IDENTITY', 'IGNORE', 'ILIKE', 'IMMEDIATE', 'IMMUTABLE',
-    'IMPLEMENTATION', 'IMPLICIT', 'IN', 'INCLUDING', 'INCREMENT',
-    'INDEX', 'INDICATOR', 'INFIX', 'INHERITS', 'INITIALIZE',
-    'INITIALLY', 'INNER', 'INOUT', 'INPUT', 'INSENSITIVE', 'INSERT',
-    'INSTEAD', 'INT', 'INTEGER', 'INTERSECT', 'INTERSECTION',
-    'INTERVAL', 'INTO', 'INVOKER', 'IS', 'ISOLATION', 'ITERATE',
-    'JOIN', 'KEY', 'KEY_MEMBER', 'KEY_TYPE', 'LANCOMPILER', 'LARGE',
-    'LAST', 'LATERAL', 'LEADING', 'LEFT', 'LENGTH', 'LESS',
-    'LEVEL', 'LIKE', 'LIMIT', 'LISTEN', 'LOAD', 'LOCAL', 'LOCALTIME',
-    'LOCALTIMESTAMP', 'LOCATION', 'LOCATOR', 'LOCK', 'LOGIN',
-    'LOWER', 'M', 'MAP', 'MATCH', 'MAX', 'MAXVALUE', 'MESSAGE_LENGTH',
-    'MESSAGE_OCTET_LENGTH', 'MESSAGE_TEXT', 'METHOD', 'MIN', 'MINUTE',
-    'MINVALUE', 'MOD', 'MODE', 'MODIFIES', 'MODIFY', 'MODULE', 'MONTH',
-    'MORE', 'MOVE', 'MUMPS', 'NAME', 'NAMES', 'NATIONAL', 'NATURAL',
-    'NCHAR', 'NCLOB', 'NEW', 'NEXT', 'NO', 'NOCREATEDB',
-    'NOCREATEUSER', 'NONE', 'NOT', 'NOTHING', 'NOTIFY', 'NOTNULL',
-    'NULL', 'NULLABLE', 'NULLIF', 'NUMBER', 'NUMERIC', 'OBJECT',
-    'OCTET_LENGTH', 'OF', 'OFF', 'OFFSET', 'OIDS', 'OLD', 'ON',
-    'ONLY', 'OPEN', 'OPERATION', 'OPERATOR', 'OPTION', 'OPTIONS',
-    'OR', 'ORDER', 'ORDINALITY', 'OUT', 'OUTER', 'OUTPUT', 'OVER',
-    'OVERLAPS', 'OVERLAY', 'OVERRIDING', 'OWNER', 'PAD', 'PARAMETER',
-    'PARAMETERS', 'PARAMETER_MODE', 'PARAMETER_NAME',
-    'PARAMETER_ORDINAL_POSITION', 'PARAMETER_SPECIFIC_CATALOG',
-    'PARAMETER_SPECIFIC_NAME', 'PARAMETER_SPECIFIC_SCHEMA',
-    'PARTIAL', 'PARTITION', 'PASCAL', 'PASSWORD', 'PATH', 'PERCENT',
-    'PLACING', 'PLAN', 'PLI', 'POSITION', 'POSTFIX', 'POWER',
-    'PRECISION', 'PREFIX', 'PREORDER', 'PREPARE', 'PRESERVE',
-    'PRIMARY', 'PRIOR', 'PRIVILEGES', 'PROCEDURAL', 'PROCEDURE',
-    'PUBLIC', 'PURGE', 'QUOTE', 'RANGE', 'RANK', 'READ', 'READS',
-    'REAL', 'RECHECK', 'RECURSIVE', 'REF', 'REFERENCES', 'REFERENCING',
-    'REINDEX', 'RELATIVE', 'RENAME', 'REPEATABLE', 'REPLACE', 'RESET',
-    'RESTART', 'RESTRICT', 'RESULT', 'RETURN', 'RETURNED_CARDINALITY',
-    'RETURNED_LENGTH', 'RETURNED_OCTET_LENGTH', 'RETURNED_SQLSTATE',
-    'RETURNS', 'REVOKE', 'RIGHT', 'ROLE', 'ROLLBACK', 'ROLLUP',
-    'ROUTINE', 'ROUTINE_CATALOG', 'ROUTINE_NAME', 'ROUTINE_SCHEMA',
-    'ROW', 'ROWS', 'ROW_COUNT', 'RULE', 'SAVEPOINT', 'SCALE',
-    'SCHEMA', 'SCHEMA_NAME', 'SCOPE', 'SCROLL', 'SEARCH', 'SECOND',
-    'SECTION', 'SECURITY', 'SELECT', 'SELF', 'SENSITIVE', 'SEQUENCE',
-    'SERIALIZABLE', 'SERVER_NAME', 'SESSION', 'SESSION_USER', 'SET',
-    'SETOF', 'SETS', 'SHARE', 'SHOW', 'SIMILAR', 'SIMPLE', 'SIZE',
-    'SMALLINT', 'SOME', 'SOURCE', 'SPACE', 'SPECIFIC', 'SPECIFICTYPE',
-    'SPECIFIC_NAME', 'SQL', 'SQLCODE', 'SQLERROR', 'SQLEXCEPTION',
-    'SQLSTATE', 'SQLWARNING', 'SQRT', 'STABLE', 'START', 'STATE',
-    'STATEMENT', 'STATIC', 'STATISTICS', 'STDIN', 'STDOUT',
-    'STORAGE', 'STRICT', 'STRUCTURE', 'STYLE', 'SUBCLASS_ORIGIN',
-    'SUBLIST', 'SUBMULTISET', 'SUBSTRING', 'SUM', 'SYSID', 'SYSTEM',
-    'SYSTEM_USER', 'TABLE', 'TABLESAMPLE', 'TABLESPACE', 'TEMP',
-    'TEMPLATE', 'TEMPORARY', 'TERMINATE', 'THAN', 'THEN', 'TIME',
-    'TIMESTAMP', 'TIMEZONE_HOUR', 'TIMEZONE_MINUTE', 'TO', 'TOAST',
-    'TRAILING', 'TRANSACTION', 'TRANSACTIONS_COMMITTED',
-    'TRANSACTIONS_ROLLED_BACK', 'TRANSACTION_ACTIVE',
-    'TRANSFORM', 'TRANSFORMS', 'TRANSLATE', 'TRANSLATION',
-    'TREAT', 'TRIGGER', 'TRIGGER_CATALOG', 'TRIGGER_NAME',
-    'TRIGGER_SCHEMA', 'TRIM', 'TRUE', 'TRUNCATE', 'TRUSTED',
-    'TYPE', 'UNCOMMITTED', 'UNDER', 'UNENCRYPTED', 'UNION',
-    'UNIQUE', 'UNKNOWN', 'UNLISTEN', 'UNNAMED', 'UNNEST', 'UNTIL',
-    'UPDATE', 'UPPER', 'URB', 'USAGE', 'USER', 'USER_DEFINED_TYPE_CATALOG',
-    'USER_DEFINED_TYPE_NAME', 'USER_DEFINED_TYPE_SCHEMA',
-    'USING', 'VACUUM', 'VALID', 'VALIDATOR', 'VALUE', 'VALUES',
-    'VARCHAR', 'VARIABLE', 'VARYING', 'VERBOSE', 'VERSION', 'VIEW',
-    'VOLATILE', 'WHEN', 'WHENEVER', 'WHERE', 'WIDTH', 'WINDOW',
-    'WITH', 'WITHIN', 'WITHOUT', 'WORK', 'WRITE', 'YEAR', 'ZONE',
-]
-
-PSQL_COMMANDS = [
-    '\\?', '\\x', '\\timing', '\\h', '\\pset', '\\pager',
-    '\\l', '\\list', '\\dt', '\\d', '\\dv', '\\df', '\\di', '\\ds', '\\dT',
-    '\\dn', '\\db', '\\dc', '\\dd', '\\dD', '\\dF', '\\du', '\\dg',
-    '\\dp', '\\z', '\\do', '\\dx', '\\dE', '\\dm', '\\ddp',
-    '\\copy', '\\i', '\\o', '\\echo', '\\cd', '\\!',
-    '\\conninfo', '\\c', '\\connect', '\\encoding', '\\errverbose',
-    '\\set', '\\unset', '\\a', '\\H', '\\t', '\\C', '\\f',
-    '\\watch', '\\g', '\\gexec', '\\sf', '\\ev', '\\ef', '\\e',
-    '\\n', 'describe',
-]
+from seaql.plugins.litecli_pkg.sqlcompleter import SQLCompleter
 
 
 class PsqlExecutor:
     def __init__(self, database='', user='', password='', host='', port='', dsn=None):
         self.conn = None
         self._connect(database, user, password, host, port, dsn)
+
+    @property
+    def connection(self):
+        return self.conn
 
     def _connect(self, database, user, password, host, port, dsn):
         if dsn:
@@ -216,8 +101,192 @@ class PostgresPlugin(DatabasePlugin):
     def create_completer(self, smart_completion: bool, settings: dict):
         from seaql.vendored.pgspecial.main import PGSpecial
         self._pgspecial = PGSpecial()
-        words = SQL_KEYWORDS + PSQL_COMMANDS + list(self._pgspecial.commands.keys())
-        return WordCompleter(words, ignore_case=True, sentence=True)
+
+        completer = SQLCompleter(
+            supported_formats=['psql', 'csv', 'tsv'],
+            keyword_casing='auto',
+        )
+
+        executor = settings.get('executor')
+
+        psql_commands = [
+            '\\?', '\\x', '\\timing', '\\h', '\\pset', '\\pager',
+            '\\l', '\\list', '\\dt', '\\d', '\\dv', '\\df', '\\di',
+            '\\ds', '\\dT', '\\dn', '\\db', '\\dc', '\\dd', '\\dD',
+            '\\dF', '\\du', '\\dg', '\\dp', '\\z', '\\do', '\\dx',
+            '\\dE', '\\dm', '\\ddp', '\\copy', '\\i', '\\o', '\\echo',
+            '\\cd', '\\!', '\\conninfo', '\\c', '\\connect', '\\encoding',
+            '\\errverbose', '\\set', '\\unset', '\\a', '\\H', '\\t', '\\C',
+            '\\f', '\\watch', '\\g', '\\gexec', '\\sf', '\\ev', '\\ef',
+            '\\e', '\\n', 'describe',
+        ]
+
+        special_commands = psql_commands + list(self._pgspecial.commands.keys())
+        completer.extend_special_commands(special_commands)
+
+        pg_keywords = [
+            'ABORT', 'ABS', 'ABSOLUTE', 'ACCESS', 'ACTION', 'ADA', 'ADD',
+            'ADMIN', 'AFTER', 'AGGREGATE', 'ALIAS', 'ALL', 'ALLOCATE', 'ALTER',
+            'ANALYSE', 'ANALYZE', 'AND', 'ANY', 'ARE', 'AS', 'ASC',
+            'ASENSITIVE', 'ASSERTION', 'ASSIGNMENT', 'ASYMMETRIC', 'AT',
+            'ATOMIC', 'AUTHORIZATION', 'AVG', 'BACKWARD', 'BEFORE', 'BEGIN',
+            'BETWEEN', 'BIGINT', 'BINARY', 'BIT', 'BITVAR', 'BIT_LENGTH',
+            'BLOB', 'BOOLEAN', 'BOTH', 'BREADTH', 'BY', 'C', 'CACHE', 'CALL',
+            'CALLED', 'CARDINALITY', 'CASCADE', 'CASCADED', 'CASE', 'CAST',
+            'CATALOG', 'CATALOG_NAME', 'CEIL', 'CEILING', 'CHAIN', 'CHAR',
+            'CHARACTER', 'CHARACTERISTICS', 'CHARACTERS', 'CHARACTER_LENGTH',
+            'CHARACTER_SET_CATALOG', 'CHARACTER_SET_NAME',
+            'CHARACTER_SET_SCHEMA', 'CHAR_LENGTH', 'CHECK', 'CHECKED',
+            'CHECKPOINT', 'CLASS', 'CLASS_ORIGIN', 'CLOB', 'CLOSE', 'CLUSTER',
+            'COALESCE', 'COBOL', 'COLLATE', 'COLLATION', 'COLLATION_CATALOG',
+            'COLLATION_NAME', 'COLLATION_SCHEMA', 'COLUMN', 'COLUMN_NAME',
+            'COMMAND_FUNCTION', 'COMMAND_FUNCTION_CODE', 'COMMENT', 'COMMIT',
+            'COMMITTED', 'COMPLETION', 'CONDITION', 'CONDITION_NUMBER',
+            'CONNECT', 'CONNECTION', 'CONNECTION_NAME', 'CONSTRAINT',
+            'CONSTRAINTS', 'CONSTRAINT_CATALOG', 'CONSTRAINT_NAME',
+            'CONSTRAINT_SCHEMA', 'CONSTRUCTOR', 'CONTAINS', 'CONTINUE',
+            'CONVERSION', 'CONVERT', 'CORRESPONDING', 'COUNT', 'CREATE',
+            'CREATEDB', 'CREATEUSER', 'CROSS', 'CUBE', 'CURRENT',
+            'CURRENT_DATE', 'CURRENT_DEFAULT_TRANSFORM_GROUP', 'CURRENT_PATH',
+            'CURRENT_ROLE', 'CURRENT_TIME', 'CURRENT_TIMESTAMP',
+            'CURRENT_TRANSFORM_GROUP_FOR_TYPE', 'CURRENT_USER', 'CURSOR',
+            'CURSOR_NAME', 'CYCLE', 'DATA', 'DATABASE', 'DATE',
+            'DATETIME_INTERVAL_CODE', 'DATETIME_INTERVAL_PRECISION', 'DAY',
+            'DEALLOCATE', 'DEC', 'DECIMAL', 'DECLARE', 'DEFAULT',
+            'DEFERRABLE', 'DEFERRED', 'DEFINED', 'DEFINER', 'DEGREE',
+            'DELETE', 'DELIMITER', 'DELIMITERS', 'DENSE_RANK', 'DEPTH',
+            'DEREF', 'DERIVED', 'DESC', 'DESCRIBE', 'DESCRIPTOR', 'DESTROY',
+            'DESTRUCTOR', 'DETERMINISTIC', 'DIAGNOSTICS', 'DICTIONARY',
+            'DISCONNECT', 'DISPATCH', 'DISTINCT', 'DO', 'DOMAIN', 'DOUBLE',
+            'DROP', 'DYNAMIC', 'DYNAMIC_FUNCTION', 'DYNAMIC_FUNCTION_CODE',
+            'EACH', 'ELSE', 'ENCODING', 'ENCRYPTED', 'END', 'END-EXEC',
+            'EQUALS', 'ERROR', 'ESCAPE', 'EVERY', 'EXCEPT', 'EXCEPTION',
+            'EXCLUDING', 'EXCLUSIVE', 'EXEC', 'EXECUTE', 'EXISTING',
+            'EXISTS', 'EXP', 'EXPLAIN', 'EXTERNAL', 'EXTRACT', 'FALSE',
+            'FETCH', 'FILTER', 'FINAL', 'FIRST', 'FLOAT', 'FLOOR',
+            'FOLLOWING', 'FOR', 'FORCE', 'FOREIGN', 'FORTRAN', 'FORWARD',
+            'FOUND', 'FREE', 'FREEZE', 'FROM', 'FULL', 'FUNCTION', 'G',
+            'GENERAL', 'GENERATED', 'GET', 'GLOBAL', 'GO', 'GOTO', 'GRANT',
+            'GRANTED', 'GROUP', 'GROUPING', 'HAVING', 'HIERARCHY', 'HOLD',
+            'HOUR', 'IDENTITY', 'IGNORE', 'ILIKE', 'IMMEDIATE', 'IMMUTABLE',
+            'IMPLEMENTATION', 'IMPLICIT', 'IN', 'INCLUDING', 'INCREMENT',
+            'INDEX', 'INDICATOR', 'INFIX', 'INHERITS', 'INITIALIZE',
+            'INITIALLY', 'INNER', 'INOUT', 'INPUT', 'INSENSITIVE', 'INSERT',
+            'INSTEAD', 'INT', 'INTEGER', 'INTERSECT', 'INTERSECTION',
+            'INTERVAL', 'INTO', 'INVOKER', 'IS', 'ISOLATION', 'ITERATE',
+            'JOIN', 'KEY', 'KEY_MEMBER', 'KEY_TYPE', 'LANCOMPILER', 'LARGE',
+            'LAST', 'LATERAL', 'LEADING', 'LEFT', 'LENGTH', 'LESS', 'LEVEL',
+            'LIKE', 'LIMIT', 'LISTEN', 'LOAD', 'LOCAL', 'LOCALTIME',
+            'LOCALTIMESTAMP', 'LOCATION', 'LOCATOR', 'LOCK', 'LOGIN',
+            'LOWER', 'M', 'MAP', 'MATCH', 'MAX', 'MAXVALUE',
+            'MESSAGE_LENGTH', 'MESSAGE_OCTET_LENGTH', 'MESSAGE_TEXT',
+            'METHOD', 'MIN', 'MINUTE', 'MINVALUE', 'MOD', 'MODE',
+            'MODIFIES', 'MODIFY', 'MODULE', 'MONTH', 'MORE', 'MOVE',
+            'MUMPS', 'NAME', 'NAMES', 'NATIONAL', 'NATURAL', 'NCHAR',
+            'NCLOB', 'NEW', 'NEXT', 'NO', 'NOCREATEDB', 'NOCREATEUSER',
+            'NONE', 'NOT', 'NOTHING', 'NOTIFY', 'NOTNULL', 'NULL',
+            'NULLABLE', 'NULLIF', 'NUMBER', 'NUMERIC', 'OBJECT',
+            'OCTET_LENGTH', 'OF', 'OFF', 'OFFSET', 'OIDS', 'OLD', 'ON',
+            'ONLY', 'OPEN', 'OPERATION', 'OPERATOR', 'OPTION', 'OPTIONS',
+            'OR', 'ORDER', 'ORDINALITY', 'OUT', 'OUTER', 'OUTPUT', 'OVER',
+            'OVERLAPS', 'OVERLAY', 'OVERRIDING', 'OWNER', 'PAD',
+            'PARAMETER', 'PARAMETERS', 'PARAMETER_MODE', 'PARAMETER_NAME',
+            'PARAMETER_ORDINAL_POSITION', 'PARAMETER_SPECIFIC_CATALOG',
+            'PARAMETER_SPECIFIC_NAME', 'PARAMETER_SPECIFIC_SCHEMA',
+            'PARTIAL', 'PARTITION', 'PASCAL', 'PASSWORD', 'PATH', 'PERCENT',
+            'PLACING', 'PLAN', 'PLI', 'POSITION', 'POSTFIX', 'POWER',
+            'PRECISION', 'PREFIX', 'PREORDER', 'PREPARE', 'PRESERVE',
+            'PRIMARY', 'PRIOR', 'PRIVILEGES', 'PROCEDURAL', 'PROCEDURE',
+            'PUBLIC', 'PURGE', 'QUOTE', 'RANGE', 'RANK', 'READ', 'READS',
+            'REAL', 'RECHECK', 'RECURSIVE', 'REF', 'REFERENCES',
+            'REFERENCING', 'REINDEX', 'RELATIVE', 'RENAME', 'REPEATABLE',
+            'REPLACE', 'RESET', 'RESTART', 'RESTRICT', 'RESULT', 'RETURN',
+            'RETURNED_CARDINALITY', 'RETURNED_LENGTH',
+            'RETURNED_OCTET_LENGTH', 'RETURNED_SQLSTATE', 'RETURNS',
+            'REVOKE', 'RIGHT', 'ROLE', 'ROLLBACK', 'ROLLUP', 'ROUTINE',
+            'ROUTINE_CATALOG', 'ROUTINE_NAME', 'ROUTINE_SCHEMA', 'ROW',
+            'ROWS', 'ROW_COUNT', 'RULE', 'SAVEPOINT', 'SCALE', 'SCHEMA',
+            'SCHEMA_NAME', 'SCOPE', 'SCROLL', 'SEARCH', 'SECOND', 'SECTION',
+            'SECURITY', 'SELECT', 'SELF', 'SENSITIVE', 'SEQUENCE',
+            'SERIALIZABLE', 'SERVER_NAME', 'SESSION', 'SESSION_USER', 'SET',
+            'SETOF', 'SETS', 'SHARE', 'SHOW', 'SIMILAR', 'SIMPLE', 'SIZE',
+            'SMALLINT', 'SOME', 'SOURCE', 'SPACE', 'SPECIFIC',
+            'SPECIFICTYPE', 'SPECIFIC_NAME', 'SQL', 'SQLCODE', 'SQLERROR',
+            'SQLEXCEPTION', 'SQLSTATE', 'SQLWARNING', 'SQRT', 'STABLE',
+            'START', 'STATE', 'STATEMENT', 'STATIC', 'STATISTICS', 'STDIN',
+            'STDOUT', 'STORAGE', 'STRICT', 'STRUCTURE', 'STYLE',
+            'SUBCLASS_ORIGIN', 'SUBLIST', 'SUBMULTISET', 'SUBSTRING', 'SUM',
+            'SYSID', 'SYSTEM', 'SYSTEM_USER', 'TABLE', 'TABLESAMPLE',
+            'TABLESPACE', 'TEMP', 'TEMPLATE', 'TEMPORARY', 'TERMINATE',
+            'THAN', 'THEN', 'TIME', 'TIMESTAMP', 'TIMEZONE_HOUR',
+            'TIMEZONE_MINUTE', 'TO', 'TOAST', 'TRAILING', 'TRANSACTION',
+            'TRANSACTIONS_COMMITTED', 'TRANSACTIONS_ROLLED_BACK',
+            'TRANSACTION_ACTIVE', 'TRANSFORM', 'TRANSFORMS', 'TRANSLATE',
+            'TRANSLATION', 'TREAT', 'TRIGGER', 'TRIGGER_CATALOG',
+            'TRIGGER_NAME', 'TRIGGER_SCHEMA', 'TRIM', 'TRUE', 'TRUNCATE',
+            'TRUSTED', 'TYPE', 'UNCOMMITTED', 'UNDER', 'UNENCRYPTED',
+            'UNION', 'UNIQUE', 'UNKNOWN', 'UNLISTEN', 'UNNAMED', 'UNNEST',
+            'UNTIL', 'UPDATE', 'UPPER', 'URB', 'USAGE', 'USER',
+            'USER_DEFINED_TYPE_CATALOG', 'USER_DEFINED_TYPE_NAME',
+            'USER_DEFINED_TYPE_SCHEMA', 'USING', 'VACUUM', 'VALID',
+            'VALIDATOR', 'VALUE', 'VALUES', 'VARCHAR', 'VARIABLE', 'VARYING',
+            'VERBOSE', 'VERSION', 'VIEW', 'VOLATILE', 'WHEN', 'WHENEVER',
+            'WHERE', 'WIDTH', 'WINDOW', 'WITH', 'WITHIN', 'WITHOUT',
+            'WORK', 'WRITE', 'YEAR', 'ZONE',
+        ]
+        completer.extend_keywords(pg_keywords)
+
+        try:
+            conn = executor.connection
+            dbname = self.connection_info.get('database', '')
+            completer.set_dbname(dbname)
+
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT schema_name FROM information_schema.schemata"
+                )
+                for row in cur.fetchall():
+                    completer.extend_schemata(row[0])
+
+                cur.execute(
+                    "SELECT table_name FROM information_schema.tables "
+                    "WHERE table_schema = 'public' AND table_type = 'BASE TABLE'"
+                )
+                tables = [row[0] for row in cur.fetchall()]
+                if tables:
+                    completer.extend_relations(
+                        [(t, 'public') for t in tables], 'tables'
+                    )
+
+                cur.execute(
+                    "SELECT table_name FROM information_schema.views "
+                    "WHERE table_schema = 'public'"
+                )
+                for row in cur.fetchall():
+                    completer.extend_relations(
+                        [(row[0], 'public')], 'views'
+                    )
+
+                cur.execute(
+                    "SELECT column_name, table_name FROM information_schema.columns "
+                    "WHERE table_schema = 'public' AND table_name = ANY(%s)",
+                    (tables,) if tables else ([''],)
+                )
+                cols = [(r[0], r[1]) for r in cur.fetchall()]
+                if cols:
+                    completer.extend_columns(cols, 'tables')
+
+                cur.execute(
+                    "SELECT routine_name FROM information_schema.routines "
+                    "WHERE specific_schema = 'public' AND routine_type = 'FUNCTION'"
+                )
+                funcs = [(r[0],) for r in cur.fetchall()]
+                if funcs:
+                    completer.extend_functions(funcs)
+        except Exception:
+            pass
+
+        return completer
 
     def create_executor(self, connection_info: dict):
         return PsqlExecutor(
