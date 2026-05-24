@@ -1,7 +1,6 @@
 import os
 
 from cli_helpers.tabular_output import TabularOutputFormatter
-from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.styles import Style
 from pygments.lexers.sql import MySqlLexer
 
@@ -11,8 +10,10 @@ from seaql.core.plugin import DatabasePlugin
 class MySQLPlugin(DatabasePlugin):
     name = 'mysql'
     version = '1.72.1'
-    lexer = PygmentsLexer(MySqlLexer)
     default_prompt = 'mysql \\u@\\h:\\d> '
+
+    def get_sql_lexer_class(self):
+        return MySqlLexer
 
     def create_style(self, syntax_style: str, cli_style: dict) -> Style:
         from mycli.clistyle import style_factory_ptoolkit

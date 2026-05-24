@@ -20,15 +20,21 @@ class DatabasePlugin(ABC):
     def version(self) -> str: ...
 
     @property
+    def lexer(self) -> PygmentsLexer:
+        return PygmentsLexer(self.get_sql_lexer_class())
+
     @abstractmethod
-    def lexer(self) -> PygmentsLexer: ...
+    def get_sql_lexer_class(self):
+        ...
 
     @property
     def default_prompt(self) -> str:
         return "\\u@\\h:\\d> "
 
-    @abstractmethod
-    def create_style(self, syntax_style: str, cli_style: dict) -> Style: ...
+    def create_style(self, syntax_style: str, cli_style: dict) -> Style:
+        from pygments.styles import get_style_by_name
+        from prompt_toolkit.styles.pygments import style_from_pygments_cls
+        return style_from_pygments_cls(get_style_by_name(syntax_style))
 
     def create_output_style(self, syntax_style: str, cli_style: dict) -> Any:
         return None

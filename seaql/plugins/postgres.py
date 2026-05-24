@@ -4,8 +4,6 @@ import psycopg
 from psycopg.conninfo import make_conninfo
 
 from cli_helpers.tabular_output import TabularOutputFormatter
-from prompt_toolkit.lexers import PygmentsLexer
-from prompt_toolkit.styles import Style
 from pygments.lexers.sql import PostgresLexer
 
 from seaql.core.plugin import DatabasePlugin
@@ -214,11 +212,10 @@ class PsqlExecutor:
 class PostgresPlugin(DatabasePlugin):
     name = 'postgres'
     version = '0.1.0'
-    lexer = PygmentsLexer(PostgresLexer)
     default_prompt = '\\u@\\h:\\d> '
 
-    def create_style(self, syntax_style: str, cli_style: dict) -> Style:
-        return Style([])
+    def get_sql_lexer_class(self):
+        return PostgresLexer
 
     def get_special_commands(self) -> list[str]:
         from seaql.vendored.pgspecial.main import PGSpecial

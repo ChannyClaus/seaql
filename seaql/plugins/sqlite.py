@@ -1,8 +1,6 @@
 import os
 
 from cli_helpers.tabular_output import TabularOutputFormatter
-from prompt_toolkit.lexers import PygmentsLexer
-from prompt_toolkit.styles import Style
 from pygments.lexers.sql import SqlLexer
 
 from seaql.core.plugin import DatabasePlugin
@@ -49,13 +47,10 @@ SQLITE_COMMANDS = [
 class SQLitePlugin(DatabasePlugin):
     name = 'sqlite'
     version = '1.15.0'
-    lexer = PygmentsLexer(SqlLexer)
     default_prompt = 'sqlite> '
 
-    def create_style(self, syntax_style: str, cli_style: dict) -> Style:
-        from pygments.styles import get_style_by_name
-        from prompt_toolkit.styles.pygments import style_from_pygments_cls
-        return style_from_pygments_cls(get_style_by_name(syntax_style))
+    def get_sql_lexer_class(self):
+        return SqlLexer
 
     def get_special_commands(self) -> list[str]:
         return SQLITE_COMMANDS
