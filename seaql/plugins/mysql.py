@@ -1,10 +1,69 @@
 import os
 
 from cli_helpers.tabular_output import TabularOutputFormatter
-from prompt_toolkit.styles import Style
 from pygments.lexers.sql import MySqlLexer
 
 from seaql.core.plugin import DatabasePlugin
+
+
+MYSQL_COMMANDS = [
+    '.databases', '.exit', '.import', '.indexes', '.load',
+    '.once', '.open', '.output', '.read', '.schema',
+    '.status', '.tables', '.views',
+    '\\?', '\\d', '\\dt', '\\dv', '\\e', '\\f', '\\fd', '\\fs',
+    '\\G', '\\l', '\\n', '\\o', '\\once', '\\P', '\\pipe_once',
+    '\\q', '\\s', '\\|', '\\watch',
+    'desc', 'describe', 'exit', 'help', 'pager', 'nopager',
+    'quit', 'system', 'tee', 'notee',
+]
+
+MYSQL_KEYWORDS = [
+    'ACCESSIBLE', 'ADD', 'ALL', 'ALTER', 'ANALYZE', 'AND', 'AS', 'ASC',
+    'ASENSITIVE', 'AUTO_INCREMENT', 'BEFORE', 'BETWEEN', 'BIGINT',
+    'BINARY', 'BLOB', 'BOTH', 'BY', 'CALL', 'CASCADE', 'CASE', 'CHANGE',
+    'CHAR', 'CHARACTER', 'CHECK', 'COLLATE', 'COLUMN', 'COMMIT',
+    'CONDITION', 'CONNECTION', 'CONSTRAINT', 'CONTINUE', 'CONVERT',
+    'CREATE', 'CROSS', 'CUBE', 'CURRENT_DATE', 'CURRENT_TIME',
+    'CURRENT_TIMESTAMP', 'CURRENT_USER', 'CURSOR', 'DATABASE',
+    'DATABASES', 'DATE', 'DATETIME', 'DAY', 'DAY_HOUR',
+    'DAY_MICROSECOND', 'DAY_MINUTE', 'DAY_SECOND', 'DEC', 'DECIMAL',
+    'DECLARE', 'DEFAULT', 'DELAYED', 'DELETE', 'DESC', 'DESCRIBE',
+    'DETERMINISTIC', 'DISTINCT', 'DISTINCTROW', 'DIV', 'DOUBLE', 'DROP',
+    'DUAL', 'EACH', 'ELSE', 'ELSEIF', 'ENCLOSED', 'ENGINE', 'ESCAPED',
+    'EXISTS', 'EXIT', 'EXPLAIN', 'FALSE', 'FETCH', 'FLOAT', 'FLOAT4',
+    'FLOAT8', 'FOR', 'FORCE', 'FOREIGN', 'FROM', 'FULLTEXT', 'FUNCTION',
+    'GENERATED', 'GET', 'GRANT', 'GROUP', 'HAVING', 'HIGH_PRIORITY',
+    'HOUR_MICROSECOND', 'HOUR_MINUTE', 'HOUR_SECOND', 'IF', 'IGNORE',
+    'IN', 'INDEX', 'INFILE', 'INNER', 'INOUT', 'INSENSITIVE', 'INSERT',
+    'INT', 'INT1', 'INT2', 'INT3', 'INT4', 'INT8', 'INTEGER',
+    'INTERVAL', 'INTO', 'IO_AFTER_GTIDS', 'IO_BEFORE_GTIDS', 'IS',
+    'ITERATE', 'JOIN', 'KEY', 'KEYS', 'KILL', 'LATERAL', 'LEADING',
+    'LEAVE', 'LEFT', 'LIKE', 'LIMIT', 'LINEAR', 'LINES', 'LOAD',
+    'LOCALTIME', 'LOCALTIMESTAMP', 'LOCK', 'LONG', 'LONGBLOB',
+    'LONGTEXT', 'LOOP', 'LOW_PRIORITY', 'MASTER_BIND',
+    'MASTER_SSL_VERIFY_SERVER_CERT', 'MATCH', 'MAXVALUE', 'MEDIUMBLOB',
+    'MEDIUMINT', 'MEDIUMTEXT', 'MIDDLEINT', 'MINUTE_MICROSECOND',
+    'MINUTE_SECOND', 'MOD', 'MODE', 'MODIFIES', 'NATURAL', 'NOT',
+    'NO_WRITE_TO_BINLOG', 'NULL', 'NUMERIC', 'ON', 'OPTIMIZE',
+    'OPTION', 'OPTIONALLY', 'OR', 'ORDER', 'OUT', 'OUTER', 'OUTFILE',
+    'OVER', 'PARTITION', 'PRECISION', 'PRIMARY', 'PROCEDURE', 'PURGE',
+    'RANGE', 'READ', 'READS', 'READ_WRITE', 'REAL', 'RECURSIVE',
+    'REFERENCES', 'REGEXP', 'RELEASE', 'RENAME', 'REPEAT', 'REPLACE',
+    'REQUIRE', 'RESIGNAL', 'RESTRICT', 'RETURN', 'REVOKE', 'RIGHT',
+    'RLIKE', 'ROLLBACK', 'SCHEMA', 'SCHEMAS', 'SECOND_MICROSECOND',
+    'SELECT', 'SENSITIVE', 'SEPARATOR', 'SET', 'SHOW', 'SIGNAL',
+    'SMALLINT', 'SPATIAL', 'SPECIFIC', 'SQL', 'SQLEXCEPTION',
+    'SQLSTATE', 'SQLWARNING', 'SQL_BIG_RESULT',
+    'SQL_CALC_FOUND_ROWS', 'SQL_SMALL_RESULT', 'SSL', 'STARTING',
+    'STORED', 'STRAIGHT_JOIN', 'TABLE', 'TERMINATED', 'TEXT', 'THEN',
+    'TINYBLOB', 'TINYINT', 'TINYTEXT', 'TO', 'TRAILING', 'TRIGGER',
+    'TRUE', 'TRUNCATE', 'TYPE', 'UNBOUNDED', 'UNDO', 'UNION', 'UNIQUE',
+    'UNLOCK', 'UNSIGNED', 'UPDATE', 'USAGE', 'USE', 'USING',
+    'UTC_DATE', 'UTC_TIME', 'UTC_TIMESTAMP', 'VALUES', 'VARBINARY',
+    'VARCHAR', 'VARCHARACTER', 'VARYING', 'VIRTUAL', 'WHEN', 'WHERE',
+    'WHILE', 'WINDOW', 'WITH', 'WRITE', 'XOR', 'YEAR_MONTH',
+    'ZEROFILL',
+]
 
 
 class MySQLPlugin(DatabasePlugin):
@@ -15,17 +74,60 @@ class MySQLPlugin(DatabasePlugin):
     def get_sql_lexer_class(self):
         return MySqlLexer
 
-    def create_style(self, syntax_style: str, cli_style: dict) -> Style:
-        from mycli.clistyle import style_factory_ptoolkit
-        return style_factory_ptoolkit(syntax_style, cli_style)
+    def get_special_commands(self) -> list[str]:
+        return MYSQL_COMMANDS
 
-    def create_completer(self, smart_completion: bool, settings: dict):
-        from mycli.sqlcompleter import SQLCompleter
-        return SQLCompleter(
-            smart_completion=smart_completion,
-            supported_formats=['psql', 'csv', 'tsv'],
-            keyword_casing='auto',
-        )
+    def get_extra_keywords(self) -> list[str]:
+        return MYSQL_KEYWORDS
+
+    def populate_completer_schema(self, completer, executor) -> None:
+        try:
+            conn = executor.conn
+            if not conn:
+                return
+            cur = conn.cursor()
+            cur.execute("SELECT DATABASE()")
+            row = cur.fetchone()
+            dbname = row[0] if row else 'mysql'
+            completer.set_dbname(dbname)
+            completer.extend_schemata(dbname)
+
+            cur.execute(
+                "SELECT table_name FROM information_schema.tables "
+                "WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE'"
+            )
+            tables = [r[0] for r in cur.fetchall()]
+            if tables:
+                completer.extend_relations([(t,) for t in tables], 'tables')
+
+            cur.execute(
+                "SELECT table_name FROM information_schema.views "
+                "WHERE table_schema = DATABASE()"
+            )
+            for r in cur.fetchall():
+                completer.extend_relations([(r[0],)], 'views')
+
+            cols = []
+            for t in tables:
+                cur.execute(
+                    "SELECT column_name FROM information_schema.columns "
+                    "WHERE table_schema = DATABASE() AND table_name = %s",
+                    (t,),
+                )
+                for r in cur.fetchall():
+                    cols.append((t, r[0]))
+            if cols:
+                completer.extend_columns(cols, 'tables')
+
+            cur.execute(
+                "SELECT routine_name FROM information_schema.routines "
+                "WHERE routine_schema = DATABASE() AND routine_type = 'FUNCTION'"
+            )
+            funcs = [(r[0],) for r in cur.fetchall()]
+            if funcs:
+                completer.extend_functions(funcs)
+        except Exception:
+            pass
 
     def create_executor(self, connection_info: dict):
         from mycli.sqlexecute import SQLExecute
