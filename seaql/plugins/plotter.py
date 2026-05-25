@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import shutil
 from datetime import datetime
 from typing import Any
 
@@ -185,6 +186,21 @@ def _place_labels(width: int, offset: int, cols: list[int], labels: list[str]) -
     return "".join(row)
 
 
+def _downsample(x_vals: list, y_vals: list[float], max_points: int):
+    n = len(y_vals)
+    if n <= max_points:
+        return x_vals, y_vals
+    step = (n - 1) / (max_points - 1) if max_points > 1 else 0
+    indices = [int(round(i * step)) for i in range(max_points)]
+    return [x_vals[i] for i in indices], [y_vals[i] for i in indices]
+
+
+def _estimate_offset(y_vals: list[float]) -> int:
+    lo, hi = min(y_vals), max(y_vals)
+    label_w = max(len(f"{lo:.2f}"), len(f"{hi:.2f}")) + 1
+    return max(10, label_w + 3)
+
+
 def plot_timeseries(arg: str = "") -> list[tuple]:
     global _last_headers, _last_rows
 
@@ -240,6 +256,11 @@ def plot_timeseries(arg: str = "") -> list[tuple]:
 
     if not y_vals:
         return [(None, None, None, "No valid numeric data to plot.")]
+
+    term_w = shutil.get_terminal_size().columns
+    est_offset = _estimate_offset(y_vals)
+    max_pts = max(10, term_w - est_offset)
+    x_vals, y_vals = _downsample(x_vals, y_vals, max_pts)
 
     chart = plot(y_vals, {"height": 12})
     chart = _render_x_axis(chart, x_vals)
