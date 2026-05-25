@@ -12,7 +12,7 @@ MYSQL_COMMANDS = [
     '.status', '.tables', '.views',
     '\\?', '\\d', '\\dt', '\\dv', '\\e', '\\f', '\\fd', '\\fs',
     '\\G', '\\l', '\\n', '\\o', '\\once', '\\P', '\\pipe_once',
-    '\\q', '\\s', '\\|', '\\watch',
+    '\\q', '\\s', '\\|', '\\watch', '\\ts',
     'desc', 'describe', 'exit', 'help', 'pager', 'nopager',
     'quit', 'system', 'tee', 'notee',
 ]

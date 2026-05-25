@@ -2,6 +2,7 @@ import logging
 import os
 import sys
 import threading
+from pathlib import Path
 
 from prompt_toolkit.application import get_app
 from prompt_toolkit.completion import DynamicCompleter, ThreadedCompleter
@@ -13,6 +14,7 @@ from prompt_toolkit.history import FileHistory
 from prompt_toolkit.shortcuts import CompleteStyle, PromptSession
 
 from .plugin import DatabasePlugin
+from seaql.plugins.plotter import store_result, plot_timeseries
 
 
 class DbCliApp:
@@ -27,6 +29,7 @@ class DbCliApp:
         self.completer = None
         self.prompt_session: PromptSession | None = None
         self._completer_lock = threading.Lock()
+        self._history_file = Path.home() / ".seaql" / "history"
 
         handler = logging.NullHandler()
         handler.setFormatter(logging.Formatter('%(asctime)s %(name)s %(levelname)s - %(message)s'))
@@ -49,6 +52,7 @@ class DbCliApp:
             sys.exit(1)
 
     def run_cli(self) -> None:
+        self._history_file.parent.mkdir(parents=True, exist_ok=True)
         self.prompt_session = PromptSession(
             lexer=self.plugin.lexer,
             reserve_space_for_menu=5,
@@ -62,6 +66,7 @@ class DbCliApp:
             include_default_pygments_style=False,
             search_ignore_case=True,
             cursor=ModalCursorShapeConfig(),
+            history=FileHistory(str(self._history_file)),
         )
 
         print(f'{self.plugin.name} {self.plugin.version}')
@@ -119,11 +124,27 @@ class DbCliApp:
         stripped = text.strip()
         if stripped.lower() in ('exit', 'quit', ':q', '\\q'):
             raise EOFError
+
+        if stripped.startswith('\\ts'):
+            arg = stripped[3:].strip()
+            results = plot_timeseries(arg)
+            output = self.plugin.format_output(results, 'psql')
+            for line in output:
+                print(line)
+            return
+
         if not stripped.startswith('\\') and not stripped.endswith(';'):
             stripped += ';'
         try:
             results = self.plugin.execute_query(self.executor, stripped)
-            output = self.plugin.format_output(results, 'psql')
+            materialized = []
+            for title, rows, headers, status in results:
+                if rows is not None:
+                    rows = list(rows)
+                materialized.append((title, rows, headers, status))
+                if headers is not None and rows is not None:
+                    store_result(headers, rows)
+            output = self.plugin.format_output(materialized, 'psql')
             for line in output:
                 print(line)
         except Exception as e:

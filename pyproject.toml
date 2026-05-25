@@ -42,6 +42,7 @@ dependencies = [
     "keyring >= 12.2.0",
     "setproctitle >= 1.1.9; sys_platform != 'win32' and 'CYGWIN' not in sys_platform",
     "tzlocal >= 5.2",
+    "asciichartpy >= 1.5.0",
 ]
 
 [project.optional-dependencies]

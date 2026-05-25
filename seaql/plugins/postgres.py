@@ -17,7 +17,7 @@ PSQL_COMMANDS = [
     '\\cd', '\\!', '\\conninfo', '\\c', '\\connect', '\\encoding',
     '\\errverbose', '\\set', '\\unset', '\\a', '\\H', '\\t', '\\C',
     '\\f', '\\watch', '\\g', '\\gexec', '\\sf', '\\ev', '\\ef',
-    '\\e', '\\n', 'describe',
+    '\\e', '\\n', 'describe', '\\ts',
 ]
 
 PG_KEYWORDS = [
