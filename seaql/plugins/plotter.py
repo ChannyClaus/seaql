@@ -63,6 +63,72 @@ def _auto_detect_columns(headers, rows):
     return numeric, dates
 
 
+def _format_x_value(val: Any, compact: bool = False) -> str:
+    dt = _parse_date(str(val))
+    if dt is not None:
+        if compact:
+            if dt.hour == 0 and dt.minute == 0:
+                return dt.strftime("%m-%d")
+            return dt.strftime("%H:%M")
+        return dt.strftime("%m-%d %H:%M")
+    s = str(val)
+    return s[:8] if len(s) > 8 else s
+
+
+def _chart_offset(chart: str) -> int:
+    lines = chart.split("\n")
+    for line in lines:
+        for i, ch in enumerate(line):
+            if ch in ("┼", "┤", "╰", "╭", "╮", "╯", "│", "╴", "╶", "─"):
+                return i
+    return 10
+
+
+def _render_x_axis(chart: str, x_values: list) -> str:
+    n = len(x_values)
+    if n <= 1:
+        return chart
+
+    offset = _chart_offset(chart)
+    width = offset + n
+
+    all_dates = all(_parse_date(str(v)) is not None for v in x_values)
+    compact = all_dates and max(len(_format_x_value(v, compact=False)) for v in x_values) > 6
+    sample = _format_x_value(x_values[0], compact=compact)
+    label_w = len(sample)
+
+    max_ticks = max(2, (n - 1) // (label_w + 1))
+    step = max(1, (n - 1) // (max_ticks - 1))
+    indices = list(range(0, n, step))
+    if indices[-1] != n - 1:
+        indices.append(n - 1)
+
+    labels = [_format_x_value(x_values[i], compact=compact) for i in indices]
+    cols = [offset + i for i in indices]
+
+    tick_row = [" "] * width
+    for c in cols:
+        if c < width:
+            tick_row[c] = "|"
+
+    label_row = [" "] * width
+    prev_end = -1
+    for c, label in zip(cols, labels):
+        pos = c - len(label) // 2
+        pos = max(offset, pos)
+        if pos + len(label) > width:
+            pos = width - len(label)
+        if pos <= prev_end + 1:
+            pos = prev_end + 2
+        if pos + len(label) <= width:
+            for j, ch in enumerate(label):
+                if pos + j < width:
+                    label_row[pos + j] = ch
+            prev_end = pos + len(label) - 1
+
+    return chart + "\n" + "".join(tick_row) + "\n" + "".join(label_row)
+
+
 def plot_timeseries(arg: str = "") -> list[tuple]:
     global _last_headers, _last_rows
 
@@ -103,6 +169,7 @@ def plot_timeseries(arg: str = "") -> list[tuple]:
         x_label, y_label = parts[0], parts[1]
 
     y_vals: list[float] = []
+    x_vals: list[Any] = []
 
     for r in rows:
         yv = r[y_idx]
@@ -113,14 +180,15 @@ def plot_timeseries(arg: str = "") -> list[tuple]:
         except (ValueError, TypeError):
             continue
         y_vals.append(yf)
+        x_vals.append(r[x_idx] if x_idx is not None else len(y_vals))
 
     if not y_vals:
         return [(None, None, None, "No valid numeric data to plot.")]
 
     chart = plot(y_vals, {"height": 12})
-    print(f"  y: {y_label}")
-    if x_idx is not None and x_label:
-        print(f"  x: {x_label}")
+    chart = _render_x_axis(chart, x_vals)
+
+    print(f"  y: {y_label}  |  x: {x_label if x_idx is not None else 'row'}")
     print("")
     print(chart)
 
